@@ -1,0 +1,92 @@
+//Created an Attendees data model to set name, number of people in party, and list of people they dislike
+public class Attendees {
+	private String name;
+	private Integer partyNumber;
+	private List<String> dislikes;
+	
+	public Attendees() {
+		
+	}
+	public Attendees(String name, Integer party, List<String> dislikes) {
+		this.name = name;
+		this.partyNumber = party;
+		this.dislikes = dislikes;
+	}
+	
+	private void setName(String name) {
+		this.name = name;
+	}
+	
+	private void setPartyNumber(Integer number) {
+		this.partyNumber = number;
+	}
+	
+	private void setDislikes(List<String> dislikes) {
+		this.dislikes = dislikes;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public Integer getPartyNumber() {
+		return partyNumber;
+	}
+	
+	public List<String> getDislikes(){
+		return dislikes;
+	}
+}
+--------------------------------------------------------------------------------------------------------------------------
+public class WeddingPlanner {
+
+	private static Map<String, List<Attendees>> assignSeating(Map<String, Integer> tables, List<Attendees> attendees){
+    //Set this for Seating Assignments
+		Map<String, List<Attendees>> newSeating = new HashMap<String, List<Attendees>>();
+		List<Attendees> listOfAttendees;
+		
+		//loop through list of given attendees
+		for(Attendees attendee : attendees) { 
+			String omitTable = null;
+      //check to see if an attendee have people that they dislike
+			if (attendee.getDislikes() != null && !attendee.getDislikes().isEmpty()) {
+        //loop through list of people an attendee dislike 
+				for(String dislike : attendee.getDislikes()) {			
+					//loop through new seating chart and check if dislikes have been seated
+					for (Map.Entry<String, List<Attendees>> entry : newSeating.entrySet()) { 
+						for(Attendees party : entry.getValue()) {
+             //check to see if dislikes are in new seating chart, if so set omitTable variable to the 
+             //table the dislikes are sitting to make attendee doesn't get placed at that table
+							if(party.getName() == dislike) {
+								omitTable = entry.getKey();
+							}
+						}
+						
+					}
+					
+					
+				}
+			}
+			//loop through the given tables map
+			for (Map.Entry<String, Integer> entry : tables.entrySet()) { 
+      //check if this is a table that should be omitted
+			if(entry.getKey() != omitTable) {
+             //check to make sure number of seats at a table is greater than the party's number
+	           if(entry.getValue() >= attendee.getPartyNumber()) {
+               //create a new list of attendees for the table
+	        	   listOfAttendees = new ArrayList<Attendees>();
+	        	   listOfAttendees.add(attendee);
+               //update the new seating chart with the current party 
+	        	   newSeating.put(entry.getKey(), listOfAttendees);
+               //get the number of left over seats after party has been seated
+	        	   int leftOverSeats = entry.getValue() - attendee.getPartyNumber();
+               //update the tables map with the number of left over seats available, so more
+               //people can be seated if possible
+	        	   tables.put(entry.getKey(), leftOverSeats);
+	           }
+			}
+	        }
+		}
+    //returns map of new seating chart
+		return newSeating;
+	}
